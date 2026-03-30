@@ -792,25 +792,26 @@
     let hasFlashed   = false;
     let isScanning   = false;
     let scanStartTime = 0;
-    const MIN_HOLD_MS = 120; // ignore touchend within this window (prevents tap-through)
-
-    // Synchronous guard set before async work to block double-tap
-    let scanInitializing = false;
+    let touchEndedDuringInit = false;
 
     async function startScan(e) {
       if (e.cancelable) e.preventDefault();
-      if (isScanning || scanInitializing || progress >= 100) return;
+      if (isScanning || progress >= 100) return;
 
-      scanInitializing = true;
+      // Lock immediately — before any async work — so touchend knows we started
+      isScanning = true;
+      touchEndedDuringInit = false;
       scanStartTime = Date.now();
 
       await initAudio();
-      scanInitializing = false;
 
-      // Re-check after async gap
-      if (isScanning || progress >= 100) return;
+      // If finger was lifted while audio was initializing, abort cleanly
+      if (touchEndedDuringInit) {
+        isScanning = false;
+        touchEndedDuringInit = false;
+        return;
+      }
 
-      isScanning = true;
       scanBtn.classList.add('active-state');
       document.documentElement.classList.add('shake');
 
@@ -848,9 +849,12 @@
     }
 
     function stopScan() {
+      // If still initializing audio, flag it and let startScan handle cleanup
+      if (isScanning && scanInterval === null) {
+        touchEndedDuringInit = true;
+        return;
+      }
       if (!isScanning) return;
-      // Ignore if released too quickly (accidental tap on mobile)
-      if (Date.now() - scanStartTime < MIN_HOLD_MS) return;
 
       isScanning = false;
       scanBtn.classList.remove('active-state');
