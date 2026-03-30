@@ -687,24 +687,31 @@
 
 
     // --- 2. AUDIO ENGINE ---
+    // Create context immediately (starts suspended — that's fine)
     let audioCtx = null;
     let audioReady = false;
     let scanOsc = null;
     let scanGain = null;
 
-    async function initAudio() {
+    function ensureAudio() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
       if (audioCtx.state === 'suspended') {
-        await audioCtx.resume();
+        audioCtx.resume().then(() => { audioReady = true; });
+      } else if (audioCtx.state === 'running') {
+        audioReady = true;
       }
-      audioReady = (audioCtx.state === 'running');
     }
 
-    // Fire-and-forget tone — safe to call without await
+    // Pre-warm on first any touch so audio is ready before scan starts
+    document.addEventListener('touchstart', ensureAudio, { once: true, passive: true });
+    document.addEventListener('mousedown',  ensureAudio, { once: true });
+
+    // Fire-and-forget tone — gates only on audioCtx existing so it works
+    // even if resume() promise hasn't resolved yet on the very first touch
     function playTone(freq, type, duration, vol = 0.1) {
-      if (!audioReady || !audioCtx) return;
+      if (!audioCtx) return;
       try {
         const osc  = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -716,12 +723,11 @@
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + duration);
-      } catch (e) { /* silently ignore */ }
+      } catch (e) {}
     }
 
     function startScanSound() {
-      if (!audioReady || !audioCtx) return;
-      // Stop any previous scan oscillator cleanly
+      if (!audioCtx) return;
       stopScanSound();
       try {
         scanOsc  = audioCtx.createOscillator();
@@ -745,13 +751,12 @@
         }
         const oscToStop = scanOsc;
         setTimeout(() => { try { oscToStop.stop(); } catch(e){} }, 200);
-      } catch (e) { /* ignore */ }
+      } catch (e) {}
       scanOsc = null;
       scanGain = null;
     }
 
     function playSuccessSound() {
-      if (!audioReady) return;
       playTone(440,    'sine', 0.8, 0.10);
       setTimeout(() => playTone(554.37, 'sine', 0.8, 0.10), 120);
       setTimeout(() => playTone(659.25, 'sine', 1.0, 0.15), 260);
@@ -759,20 +764,17 @@
     }
 
     function playErrorSound() {
-      if (!audioReady) return;
       playTone(300, 'sawtooth', 0.3, 0.05);
       setTimeout(() => playTone(200, 'sawtooth', 0.4, 0.05), 160);
     }
 
     function playAlertBeep() {
-      if (!audioReady) return;
       playTone(1200, 'square', 0.15, 0.04);
       setTimeout(() => playTone(1000, 'square', 0.15, 0.04), 180);
     }
 
     function playClaimSound() {
-      if (!audioReady) return;
-      playTone(600, 'sine', 0.15, 0.10);
+      playTone(600,  'sine', 0.15, 0.10);
       setTimeout(() => playTone(800,  'sine', 0.20, 0.12), 120);
       setTimeout(() => playTone(1000, 'sine', 0.30, 0.15), 260);
     }
@@ -791,27 +793,15 @@
     let flashTimeout = null;
     let hasFlashed   = false;
     let isScanning   = false;
-    let scanStartTime = 0;
-    let touchEndedDuringInit = false;
 
-    async function startScan(e) {
+    function startScan(e) {
       if (e.cancelable) e.preventDefault();
       if (isScanning || progress >= 100) return;
 
-      // Lock immediately — before any async work — so touchend knows we started
+      // Ensure audio context exists and is resuming
+      ensureAudio();
+
       isScanning = true;
-      touchEndedDuringInit = false;
-      scanStartTime = Date.now();
-
-      await initAudio();
-
-      // If finger was lifted while audio was initializing, abort cleanly
-      if (touchEndedDuringInit) {
-        isScanning = false;
-        touchEndedDuringInit = false;
-        return;
-      }
-
       scanBtn.classList.add('active-state');
       document.documentElement.classList.add('shake');
 
@@ -849,11 +839,6 @@
     }
 
     function stopScan() {
-      // If still initializing audio, flag it and let startScan handle cleanup
-      if (isScanning && scanInterval === null) {
-        touchEndedDuringInit = true;
-        return;
-      }
       if (!isScanning) return;
 
       isScanning = false;
@@ -876,14 +861,9 @@
       logText.style.color = 'var(--pink-light)';
     }
 
-    // Init audio on very first interaction so context is ready before scan
-    document.addEventListener('click',      initAudio, { once: true });
-    document.addEventListener('touchstart', initAudio, { once: true, passive: true });
-
     scanBtn.addEventListener('mousedown',  startScan);
     scanBtn.addEventListener('touchstart', startScan, { passive: false });
 
-    // Stop on mouseup/touchend — NOT on mouseleave (too jarring)
     window.addEventListener('mouseup',     stopScan);
     window.addEventListener('touchend',    stopScan);
     window.addEventListener('touchcancel', stopScan);
