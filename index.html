@@ -309,15 +309,7 @@
       transform: scale(1.05);
     }
 
-    /* Screen Shake — on a dedicated overlay so it never conflicts with container animations */
-    #shake-overlay {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 998;
-      display: none;
-    }
-
+    /* Screen Shake — applied to <html> so it shakes all visible content cleanly */
     @keyframes intenseShake {
       0%   { transform: translate(2px, 2px) rotate(0deg); }
       20%  { transform: translate(-2px, -3px) rotate(-1deg); }
@@ -327,7 +319,7 @@
       100% { transform: translate(-2px, 2px) rotate(-1deg); }
     }
 
-    .shake {
+    html.shake {
       animation: intenseShake 0.3s infinite;
       filter: hue-rotate(10deg) saturate(1.2);
     }
@@ -573,7 +565,6 @@
 
   <canvas id="particle-canvas"></canvas>
   <div id="scan-laser"></div>
-  <div id="shake-overlay"></div>
 
   <h1>✨ Multiverse Scanner ✨</h1>
   <div class="subtitle">Searching alternate dimensions...</div>
@@ -794,7 +785,6 @@
     const scannerContainer = document.getElementById('scanner-container');
     const gridContainer    = document.getElementById('grid-container');
     const scanLaser        = document.getElementById('scan-laser');
-    const shakeOverlay     = document.getElementById('shake-overlay');
 
     let progress     = 0;
     let scanInterval = null;
@@ -822,7 +812,7 @@
 
       isScanning = true;
       scanBtn.classList.add('active-state');
-      shakeOverlay.classList.add('shake');
+      document.documentElement.classList.add('shake');
 
       scanLaser.style.display = 'block';
       scanLaser.style.animation = 'laserSweep 1s linear infinite';
@@ -864,7 +854,7 @@
 
       isScanning = false;
       scanBtn.classList.remove('active-state');
-      shakeOverlay.classList.remove('shake');
+      document.documentElement.classList.remove('shake');
       clearInterval(scanInterval);
       clearTimeout(flashTimeout);
       scanInterval = null;
@@ -897,7 +887,7 @@
     function completeScan() {
       isScanning = false;
       scanBtn.classList.remove('active-state');
-      shakeOverlay.classList.remove('shake');
+      document.documentElement.classList.remove('shake');
       clearInterval(scanInterval);
       scanInterval = null;
       scanLaser.style.display = 'none';
@@ -1003,14 +993,18 @@
 
 
     // --- 5. FULLSCREEN VIEWER ---
+    let savedScrollY = 0;
+
     function openFullscreen(src) {
       const viewer = document.getElementById('fullscreen-viewer');
       const img    = document.getElementById('fullscreen-image');
       img.src = src;
       viewer.classList.add('active');
-      // iOS Safari scroll lock
+      // iOS Safari scroll lock — save position first to restore on close
+      savedScrollY = window.scrollY;
       document.body.style.overflow = 'hidden';
       document.body.style.position = 'fixed';
+      document.body.style.top = `-${savedScrollY}px`;
       document.body.style.width = '100%';
     }
 
@@ -1018,7 +1012,9 @@
       document.getElementById('fullscreen-viewer').classList.remove('active');
       document.body.style.overflow = '';
       document.body.style.position = '';
+      document.body.style.top = '';
       document.body.style.width = '';
+      window.scrollTo(0, savedScrollY);
     }
 
     document.getElementById('fullscreen-viewer').addEventListener('click', function(e) {
