@@ -7,13 +7,16 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     :root {
-      --pink-light: #ff9a9e;
-      --pink-neon: #ff1493;
+      --pink-light: #ffb3d9;
+      --pink-neon: #ff69b4;
       --purple-deep: #2a0845;
-      --purple-neon: #8e2de2;
-      --rose-gold: #fbc2eb;
+      --purple-neon: #9b59b6;
+      --rose-gold: #f0b27a;
       --glass-bg: rgba(255, 255, 255, 0.08);
       --glass-border: rgba(255, 255, 255, 0.2);
+      --soft-pink: #ffe0f0;
+      --lavender: #e6b3ff;
+      --peach: #ffd4b3;
     }
 
     * {
@@ -24,7 +27,7 @@
     }
 
     body {
-      background: linear-gradient(135deg, #0f0c29, #302b63, #240b36);
+      background: linear-gradient(135deg, #2a0845, #3d1e6d, #8e44ad, #bb8fce);
       background-size: 400% 400%;
       animation: gradientBG 15s ease infinite;
       color: #fff;
@@ -81,11 +84,11 @@
     /* Intro Animations */
     h1 {
       text-transform: uppercase;
-      letter-spacing: 4px;
+      letter-spacing: 3px;
       font-weight: 900;
-      font-size: 2rem;
-      background: linear-gradient(to right, var(--pink-light), var(--rose-gold), var(--pink-neon));
-      background-size: 200% auto;
+      font-size: 1.8rem;
+      background: linear-gradient(to right, var(--soft-pink), var(--rose-gold), var(--lavender), var(--pink-neon));
+      background-size: 300% auto;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       animation: shine 3s linear infinite, slideDown 1s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
@@ -93,6 +96,7 @@
       margin-bottom: 15px;
       opacity: 0;
       transform: translateY(-30px);
+      white-space: nowrap;
     }
 
     @keyframes shine {
@@ -105,7 +109,7 @@
 
     .subtitle {
       font-size: 0.95rem;
-      color: var(--rose-gold);
+      color: var(--soft-pink);
       opacity: 0;
       margin-bottom: 40px;
       letter-spacing: 2px;
@@ -256,7 +260,7 @@
     .instruction-text {
       margin-top: 25px;
       font-size: 0.95rem;
-      color: var(--rose-gold);
+      color: var(--lavender);
       text-transform: uppercase;
       letter-spacing: 3px;
       font-weight: 700;
@@ -300,7 +304,7 @@
       min-height: 3rem;
       font-weight: 600;
       letter-spacing: 0.5px;
-      color: var(--rose-gold);
+      color: var(--peach);
       font-family: 'Courier New', Courier, monospace;
       padding: 0 15px;
       transition: all 0.3s ease;
@@ -327,6 +331,92 @@
       filter: hue-rotate(10deg) saturate(1.2);
     }
 
+    /* Fullscreen Image Viewer */
+    .fullscreen-viewer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .fullscreen-viewer.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .fullscreen-image {
+      max-width: 90vw;
+      max-height: 90vh;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+      animation: zoomIn 0.3s ease;
+    }
+
+    @keyframes zoomIn {
+      from {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 10001;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 20, 147, 0.3);
+      border-color: var(--pink-neon);
+      transform: scale(1.1);
+    }
+
+    .close-btn::before,
+    .close-btn::after {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 2px;
+      background: #fff;
+      transition: all 0.3s ease;
+    }
+
+    .close-btn::before {
+      transform: rotate(45deg);
+    }
+
+    .close-btn::after {
+      transform: rotate(-45deg);
+    }
+
     /* Grid & Cards */
     #grid-container {
       display: none;
@@ -350,17 +440,20 @@
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid var(--glass-border);
-      border-top: 1px solid rgba(255, 255, 255, 0.5);
-      border-left: 1px solid rgba(255, 255, 255, 0.5);
-      border-radius: 28px;
-      padding: 25px;
-      color: #fff;
-      opacity: 0;
-      transform: scale(0.8) translateY(50px);
+      border-radius: 24px;
+      padding: 24px;
+      margin: 16px 0;
+      max-width: 380px;
+      width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+      min-height: 420px;
     }
 
     /* Spring Animation for Cards */
@@ -372,40 +465,76 @@
 
     .glass-card img {
       width: 100%;
-      aspect-ratio: 1 / 1;
+      height: 200px;
       object-fit: cover;
-      border-radius: 20px;
-      margin-bottom: 20px;
+      object-position: center top;
+      border-radius: 16px;
+      margin-bottom: 16px;
       border: 2px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-      transition: transform 0.3s ease;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      transition: all 0.3s ease;
+      cursor: pointer;
     }
 
     .glass-card:hover img {
       transform: scale(1.03);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
     }
 
     .glass-card h3 {
-      color: var(--pink-light);
-      margin: 0 0 12px 0;
-      font-size: 1.4rem;
+      color: var(--soft-pink);
+      margin: 0 0 10px 0;
+      font-size: 1.3rem;
       font-weight: 800;
       letter-spacing: 1px;
+      line-height: 1.3;
     }
 
     .glass-card p {
-      font-size: 1rem;
-      line-height: 1.6;
+      font-size: 0.95rem;
+      line-height: 1.5;
       color: rgba(255, 255, 255, 0.9);
-      margin-bottom: 25px;
+      margin-bottom: 20px;
       flex-grow: 1;
+      font-weight: 400;
+    }
+
+    /* Message Card Styling */
+    .message-card {
+      background: linear-gradient(135deg, rgba(255, 179, 217, 0.2), rgba(230, 179, 255, 0.2));
+      border: 2px solid var(--soft-pink);
+      box-shadow: 0 15px 40px rgba(255, 179, 217, 0.3), inset 0 0 30px rgba(255, 255, 255, 0.2);
+      position: relative;
+      overflow: hidden;
+      min-height: 420px;
+    }
+
+    .message-card::before {
+      content: '💌';
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 1.5rem;
+      opacity: 0.6;
+    }
+
+    .message-card h3 {
+      color: var(--soft-pink);
+      text-shadow: 0 0 10px rgba(255, 179, 217, 0.5);
+    }
+
+    .message-card p {
+      color: #fff;
+      font-style: italic;
+      line-height: 1.6;
+      font-size: 0.9rem;
     }
 
     /* Prime Card Styling */
     .prime-card {
-      background: linear-gradient(135deg, rgba(255, 20, 147, 0.15), rgba(142, 45, 226, 0.15));
-      border: 2px solid var(--pink-light);
-      box-shadow: 0 15px 40px rgba(255, 20, 147, 0.3), inset 0 0 30px rgba(255, 255, 255, 0.15);
+      background: linear-gradient(135deg, rgba(255, 105, 180, 0.15), rgba(155, 89, 182, 0.15));
+      border: 2px solid var(--soft-pink);
+      box-shadow: 0 15px 40px rgba(255, 105, 180, 0.3), inset 0 0 30px rgba(255, 255, 255, 0.15);
       position: relative;
       overflow: hidden;
     }
@@ -438,7 +567,7 @@
     .prime-card .action-btn {
       background: linear-gradient(45deg, var(--purple-neon), var(--pink-neon));
       border: none;
-      box-shadow: 0 5px 20px rgba(255, 20, 147, 0.5);
+      box-shadow: 0 5px 20px rgba(255, 105, 180, 0.5);
       margin-top: auto;
       font-size: 1.1rem;
       padding: 18px;
@@ -450,7 +579,7 @@
       background: rgba(0,0,0,0.5);
       padding: 20px;
       border-radius: 16px;
-      border: 2px dashed var(--pink-light);
+      border: 2px dashed var(--soft-pink);
       color: #fff; 
       margin-top: 15px; 
       font-weight: 900; 
@@ -495,6 +624,12 @@
 
   <div id="grid-container"></div>
 
+  <!-- Fullscreen Image Viewer -->
+  <div id="fullscreen-viewer" class="fullscreen-viewer">
+    <div class="close-btn" onclick="closeFullscreen()"></div>
+    <img id="fullscreen-image" class="fullscreen-image" src="" alt="">
+  </div>
+
   <script>
     // ==========================================
     // CONFIGURATION: EDIT PHOTOS AND JOKES HERE
@@ -504,25 +639,33 @@
     // 1. Save the image of Prachi you uploaded to the same folder as this file, name it "prachi.jpg"
     // 2. Change the URL below to "./prachi.jpg"
     // (I am using a beautiful aesthetic placeholder so the app works immediately!)
-    const PRACHI_IMAGE_URL = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80"; 
+    const PRACHI_IMAGE_URL = "./src/images/main.png"; 
     
     const imagePool = [
       PRACHI_IMAGE_URL,
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80", 
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80", 
-      "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=600&q=80", 
-      "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=600&q=80"  
+      "./src/images/prank1.png", 
+      "./src/images/prank2.png", 
+      "./src/images/prank3.png", 
+      "./src/images/prank4.png",
+      "./src/images/prank5.png",
+      "./src/images/prank6.png",
+      "./src/images/prank7.png",
+      "./src/images/prank8.png",
+      "./src/images/prank9.png",
+      "./src/images/prank10.png"
+
+
     ];
 
     const insideJokes = [
-      { title: "Quantum Prachi", bio: "Exists in a superposition of being both early and late." },
-      { title: "Cyber Prachi", bio: "Replaced all her code with 'console.log(\"it works\")'." },
-      { title: "Neon Prachi", bio: "Glows in the dark. Refuses to explain why." },
-      { title: "Retro Prachi", bio: "Still uses Internet Explorer. Unironically." },
-      { title: "Mecha Prachi", bio: "Powered entirely by iced coffee and spite." },
-      { title: "Astral Prachi", bio: "Communicates exclusively through interpretive dance." },
-      { title: "Void Prachi", bio: "Stares into the abyss. The abyss blinks first." },
-      { title: "Glitch Prachi", bio: "Clips through walls when she's running late." }
+      { title: "Superhero Prachi", bio: "Saves the world before breakfast, still has time for perfect eyeliner." },
+      { title: "Chef Prachi", bio: "Can make anything delicious. Even broccoli tastes like pizza in her kitchen." },
+      { title: "Genius Prachi", bio: "IQ higher than WiFi signal. Solves quantum physics for fun." },
+      { title: "Fashion Icon Prachi", bio: "Even sweatpants look like couture when she wears them." },
+      { title: "Comedian Prachi", bio: "So funny that even comedians come to her for material." },
+      { title: "Artist Prachi", bio: "Paints masterpieces while sleeping. Mona Lisa is jealous." },
+      { title: "Music Legend Prachi", bio: "Voice so beautiful, birds stop to listen when she sings." },
+      { title: "Inspirational Prachi", bio: "Motivational speaker. TED talks call her for advice." }
     ];
     // ==========================================
 
@@ -750,19 +893,38 @@
 
     function generateCards() {
       const shuffledJokes = [...insideJokes].sort(() => 0.5 - Math.random()).slice(0, 3);
+      const shuffledImages = [...imagePool].sort(() => 0.5 - Math.random());
       
       shuffledJokes.forEach((joke, index) => {
-        const randomImg = imagePool[Math.floor(Math.random() * imagePool.length)];
-        createCard(joke.title, joke.bio, randomImg, false, index);
+        const uniqueImg = shuffledImages[index];
+        createCard(joke.title, joke.bio, uniqueImg, false, index);
       });
       
       // Prime Card (Always 4th)
       createCard(
-        "Prime Universe (This One)", 
-        "Prachi. Status: Currently being pranked. Value: Priceless.", 
+        "Prime Universe (This One🫵🫶)", 
+        "Prachi. Status: Currently being pranked. Value: Priceless. Even angels gets jelous of her🪽", 
         PRACHI_IMAGE_URL, 
         true, 
         3 
+      );
+      
+      // Message Card (Always 5th)
+      createCard(
+        "A Special Message 🌟", 
+        "Dear Prachi💖, you're amazing in every universe✨! This multiverse scanner found the best version of you in every dimension👾. Hope you enjoyed this little adventure! Happy April Fool's Day! 🎐", 
+        "./src/images/main.png", 
+        'message', 
+        4 
+      );
+      
+      // Bonus Card (Always 6th)
+      createCard(
+        "Dimensional Analysis 📊", 
+        "Dekho chahta to asal me ullu banata. But but... is time tumko overthinking nhi de sakta tha. Ab acche se padhai karna, aur jaise jaise time pass aata h anxiety badhti hai. Tum ye yaad rakhna ki tumne bohot mehnat kari h aur tum superman ho..!! Sab accha hi hoga and go with the flow. Apna aur apne pair ka dhyn rakho bohot jyda.. Aur haa you're the best, Always Remember🫶", 
+        "./src/images/main2.png", 
+        false, 
+        5 
       );
       
       // Grand Confetti Finale
@@ -795,7 +957,15 @@
 
     function createCard(title, bio, imgUrl, isPrime, delayIndex) {
       const card = document.createElement('div');
-      card.className = `glass-card ${isPrime ? 'prime-card' : ''}`;
+      let cardClass = 'glass-card';
+      
+      if (isPrime === true) {
+        cardClass += ' prime-card';
+      } else if (isPrime === 'message') {
+        cardClass += ' message-card';
+      }
+      
+      card.className = cardClass;
       // Use the new spring animation
       card.style.animation = `popInSpring 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) ${delayIndex * 0.2}s forwards`;
       
@@ -805,7 +975,7 @@
         <p>${bio}</p>
       `;
       
-      if (isPrime) {
+      if (isPrime === true) {
         innerHTML += `
           <button id="claim-btn" class="action-btn">CLAIM REWARD 🎁</button>
           <div id="reward-code">
@@ -818,7 +988,15 @@
       card.innerHTML = innerHTML;
       gridContainer.appendChild(card);
       
-      if (isPrime) {
+      // Add click event to image for fullscreen view
+      const cardImage = card.querySelector('img');
+      if (cardImage) {
+        cardImage.addEventListener('click', () => {
+          openFullscreen(cardImage.src);
+        });
+      }
+      
+      if (isPrime === true) {
         const claimBtn = card.querySelector('#claim-btn');
         const rewardCode = card.querySelector('#reward-code');
         claimBtn.addEventListener('click', () => {
@@ -838,6 +1016,41 @@
         });
       }
     }
+
+    // Fullscreen Image Viewer Functions
+    function openFullscreen(imageSrc) {
+      const viewer = document.getElementById('fullscreen-viewer');
+      const fullscreenImage = document.getElementById('fullscreen-image');
+      
+      fullscreenImage.src = imageSrc;
+      viewer.classList.add('active');
+      document.body.style.overflow = 'hidden';
+      
+      // Add escape key listener
+      document.addEventListener('keydown', handleEscapeKey);
+    }
+
+    function closeFullscreen() {
+      const viewer = document.getElementById('fullscreen-viewer');
+      viewer.classList.remove('active');
+      document.body.style.overflow = 'auto';
+      
+      // Remove escape key listener
+      document.removeEventListener('keydown', handleEscapeKey);
+    }
+
+    function handleEscapeKey(event) {
+      if (event.key === 'Escape') {
+        closeFullscreen();
+      }
+    }
+
+    // Close on background click
+    document.getElementById('fullscreen-viewer').addEventListener('click', function(event) {
+      if (event.target === this) {
+        closeFullscreen();
+      }
+    });
   </script>
 </body>
 </html>
