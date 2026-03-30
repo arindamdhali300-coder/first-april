@@ -90,6 +90,7 @@
       background: linear-gradient(to right, var(--soft-pink), var(--rose-gold), var(--lavender), var(--pink-neon));
       background-size: 300% auto;
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
       animation: shine 3s linear infinite, slideDown 1s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
       margin-top: 8vh;
@@ -639,20 +640,19 @@
     // 1. Save the image of Prachi you uploaded to the same folder as this file, name it "prachi.jpg"
     // 2. Change the URL below to "./prachi.jpg"
     // (I am using a beautiful aesthetic placeholder so the app works immediately!)
-    const PRACHI_IMAGE_URL = "/images/main.png"; 
+    const PRACHI_IMAGE_URL = "https://picsum.photos/400/400?random=1"; 
     
     const imagePool = [
       PRACHI_IMAGE_URL,
-      "/images/prank1.png", 
-      "/images/prank2.png", 
-      "/images/prank3.png", 
-      "/images/prank4.png",
-      "/images/prank5.png",
-      "/images/prank6.png",
-      "/images/prank7.png",
-      "/images/prank8.png",
-      "/images/prank9.png",
-      "/images/prank10.png"
+      "https://picsum.photos/400/400?random=2", 
+      "https://picsum.photos/400/400?random=3", 
+      "https://picsum.photos/400/400?random=4", 
+      "https://picsum.photos/400/400?random=5",
+      "https://picsum.photos/400/400?random=6",
+      "https://picsum.photos/400/400?random=7",
+      "https://picsum.photos/400/400?random=8",
+      "https://picsum.photos/400/400?random=9",
+      "https://picsum.photos/400/400?random=10"
 
 
     ];
@@ -721,60 +721,103 @@
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx;
     let scanOsc, scanGain;
+    let audioInitialized = false;
 
     function initAudio() {
-      if (!audioCtx) audioCtx = new AudioContext();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+      if (!audioCtx) {
+        audioCtx = new AudioContext();
+        audioInitialized = true;
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    // Initialize audio on first user interaction
+    function initAudioOnInteraction() {
+      if (!audioInitialized) {
+        initAudio();
+        // Play a silent sound to fully initialize audio context
+        playTone(0.1, 'sine', 0.01, 0.001);
+      }
     }
 
     function playTone(freq, type, duration, vol = 0.1) {
-      if (!audioCtx) return;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-      gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + duration);
+      try {
+        if (!audioCtx) initAudio();
+        if (!audioCtx || audioCtx.state === 'suspended') return;
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (error) {
+        console.log('Audio not supported or blocked');
+      }
     }
 
     function startScanSound() {
-      initAudio();
-      scanOsc = audioCtx.createOscillator();
-      scanGain = audioCtx.createGain();
-      scanOsc.type = 'triangle';
-      // Pitch goes up as progress increases
-      scanOsc.frequency.setValueAtTime(150, audioCtx.currentTime);
-      scanOsc.frequency.linearRampToValueAtTime(600, audioCtx.currentTime + 5); 
-      scanGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-      scanOsc.connect(scanGain);
-      scanGain.connect(audioCtx.destination);
-      scanOsc.start();
+      try {
+        initAudio();
+        if (!audioCtx || audioCtx.state === 'suspended') return;
+        
+        scanOsc = audioCtx.createOscillator();
+        scanGain = audioCtx.createGain();
+        scanOsc.type = 'triangle';
+        // Pitch goes up as progress increases
+        scanOsc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        scanOsc.frequency.linearRampToValueAtTime(600, audioCtx.currentTime + 5); 
+        scanGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        scanOsc.connect(scanGain);
+        scanGain.connect(audioCtx.destination);
+        scanOsc.start();
+      } catch (error) {
+        console.log('Scan sound not supported');
+      }
     }
 
     function stopScanSound() {
-      if (scanGain && audioCtx) {
-        scanGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-        setTimeout(() => { if (scanOsc) scanOsc.stop(); }, 100);
+      try {
+        if (scanGain && audioCtx && audioCtx.state !== 'suspended') {
+          scanGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+          setTimeout(() => { if (scanOsc) scanOsc.stop(); }, 100);
+        }
+      } catch (error) {
+        console.log('Stop scan sound failed');
       }
     }
 
     function playSuccessSound() {
-      initAudio();
-      // Magical ascending chord
-      playTone(440, 'sine', 0.8, 0.1); // A4
-      setTimeout(() => playTone(554.37, 'sine', 0.8, 0.1), 100); // C#5
-      setTimeout(() => playTone(659.25, 'sine', 1.0, 0.15), 200); // E5
-      setTimeout(() => playTone(880, 'sine', 1.5, 0.2), 350); // A5
+      try {
+        initAudio();
+        if (!audioCtx || audioCtx.state === 'suspended') return;
+        
+        // Magical ascending chord
+        playTone(440, 'sine', 0.8, 0.1); // A4
+        setTimeout(() => playTone(554.37, 'sine', 0.8, 0.1), 100); // C#5
+        setTimeout(() => playTone(659.25, 'sine', 1.0, 0.15), 200); // E5
+        setTimeout(() => playTone(880, 'sine', 1.5, 0.2), 350); // A5
+      } catch (error) {
+        console.log('Success sound not supported');
+      }
     }
 
     function playErrorSound() {
-      initAudio();
-      playTone(300, 'sawtooth', 0.3, 0.05);
-      setTimeout(() => playTone(200, 'sawtooth', 0.4, 0.05), 150);
+      try {
+        initAudio();
+        if (!audioCtx || audioCtx.state === 'suspended') return;
+        
+        playTone(300, 'sawtooth', 0.3, 0.05);
+        setTimeout(() => playTone(200, 'sawtooth', 0.4, 0.05), 150);
+      } catch (error) {
+        console.log('Error sound not supported');
+      }
     }
 
 
@@ -861,6 +904,10 @@
       logText.style.color = "var(--pink-light)";
     }
 
+    // Add global click listener to initialize audio on first interaction
+    document.addEventListener('click', initAudioOnInteraction, { once: true });
+    document.addEventListener('touchstart', initAudioOnInteraction, { once: true });
+
     scanBtn.addEventListener('mousedown', startScan);
     scanBtn.addEventListener('touchstart', startScan, {passive: false});
     
@@ -913,7 +960,7 @@
       createCard(
         "A Special Message 🌟", 
         "Dear Prachi💖, you're amazing in every universe✨! This multiverse scanner found the best version of you in every dimension👾. Hope you enjoyed this little adventure! Happy April Fool's Day! 🎐", 
-        "/images/main.png", 
+        "https://picsum.photos/400/400?random=11", 
         'message', 
         4 
       );
@@ -922,7 +969,7 @@
       createCard(
         "Dimensional Analysis 📊", 
         "Dekho chahta to asal me ullu banata. But but... is time tumko overthinking nhi de sakta tha. Isiliye yee. Ab acche se padhai karna, aur jaise jaise time pass aata h anxiety badhti hai. Tum ye yaad rakhna ki tumne bohot mehnat kari h aur tum superman ho..!! Sab accha hi hoga and go with the flow. Apna aur apne pair ka dhyn rakho bohot jyda.. Aur haa you're the best, Always Remember🫶", 
-        "/images/main2.png", 
+        "https://picsum.photos/400/400?random=12", 
         false, 
         5 
       );
