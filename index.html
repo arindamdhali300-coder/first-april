@@ -52,10 +52,8 @@
     /* Magical Particle Background */
     #particle-canvas {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
       z-index: -1;
       pointer-events: none;
     }
@@ -63,10 +61,8 @@
     /* Scanning Laser Line */
     #scan-laser {
       position: fixed;
-      top: -10px;
-      left: 0;
-      width: 100vw;
-      height: 3px;
+      top: -10px; left: 0;
+      width: 100vw; height: 3px;
       background: var(--pink-neon);
       box-shadow: 0 0 20px 5px rgba(255, 20, 147, 0.6), 0 0 40px 10px rgba(142, 45, 226, 0.4);
       z-index: 999;
@@ -75,9 +71,9 @@
     }
 
     @keyframes laserSweep {
-      0% { top: 0; opacity: 0; }
-      10% { opacity: 1; }
-      90% { opacity: 1; }
+      0%   { top: 0; opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 1; }
       100% { top: 100vh; opacity: 0; }
     }
 
@@ -98,6 +94,8 @@
       opacity: 0;
       transform: translateY(-30px);
       white-space: nowrap;
+      /* isolate so body shake doesn't distort heading transform */
+      will-change: transform;
     }
 
     @keyframes shine {
@@ -160,8 +158,8 @@
     }
 
     @keyframes breathe {
-      0% { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 20, 147, 0.2); }
-      100% { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 35px rgba(142, 45, 226, 0.6); }
+      0%   { box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 15px rgba(255,20,147,0.2); }
+      100% { box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 35px rgba(142,45,226,0.6); }
     }
 
     .action-btn::before {
@@ -173,22 +171,19 @@
       transition: 0.5s;
     }
 
-    .action-btn:hover::before {
-      left: 200%;
-    }
+    .action-btn:hover::before { left: 200%; }
 
     .action-btn:active, .action-btn.active-state {
       transform: scale(0.92);
       background: rgba(255, 20, 147, 0.4);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 40px rgba(255, 20, 147, 0.8);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3), 0 0 40px rgba(255,20,147,0.8);
       border-color: var(--pink-light);
       animation: none;
     }
 
     /* Biometric Button */
     .biometric-btn {
-      width: 110px;
-      height: 110px;
+      width: 110px; height: 110px;
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(15px);
@@ -200,7 +195,7 @@
       cursor: pointer;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 0 20px rgba(255, 20, 147, 0.2), inset 0 0 20px rgba(255, 20, 147, 0.1);
+      box-shadow: 0 0 20px rgba(255,20,147,0.2), inset 0 0 20px rgba(255,20,147,0.1);
       transition: all 0.3s ease;
       animation: pulseGlow 2s infinite alternate;
       touch-action: manipulation;
@@ -209,13 +204,12 @@
     }
 
     @keyframes pulseGlow {
-      0% { box-shadow: 0 0 20px rgba(255, 20, 147, 0.2), inset 0 0 20px rgba(255, 20, 147, 0.1); }
-      100% { box-shadow: 0 0 40px rgba(142, 45, 226, 0.5), inset 0 0 40px rgba(142, 45, 226, 0.4); }
+      0%   { box-shadow: 0 0 20px rgba(255,20,147,0.2), inset 0 0 20px rgba(255,20,147,0.1); }
+      100% { box-shadow: 0 0 40px rgba(142,45,226,0.5), inset 0 0 40px rgba(142,45,226,0.4); }
     }
 
     .biometric-btn svg {
-      width: 55px;
-      height: 55px;
+      width: 55px; height: 55px;
       stroke: rgba(255, 255, 255, 0.6);
       transition: all 0.3s ease;
       z-index: 2;
@@ -236,10 +230,8 @@
     .biometric-btn::after {
       content: '';
       position: absolute;
-      top: -50%;
-      left: 0;
-      width: 100%;
-      height: 4px;
+      top: -50%; left: 0;
+      width: 100%; height: 4px;
       background: #fff;
       box-shadow: 0 0 15px 5px var(--pink-neon);
       opacity: 0;
@@ -253,8 +245,8 @@
     }
 
     @keyframes scanFingerprint {
-      0% { top: -10%; }
-      50% { top: 100%; }
+      0%   { top: -10%; }
+      50%  { top: 100%; }
       100% { top: -10%; }
     }
 
@@ -294,7 +286,7 @@
     }
 
     @keyframes flow {
-      0% { background-position: 100% 0; }
+      0%   { background-position: 100% 0; }
       100% { background-position: -100% 0; }
     }
 
@@ -308,7 +300,7 @@
       color: var(--peach);
       font-family: 'Courier New', Courier, monospace;
       padding: 0 15px;
-      transition: all 0.3s ease;
+      transition: color 0.3s ease, transform 0.3s ease;
     }
 
     .flash-text {
@@ -317,42 +309,48 @@
       transform: scale(1.05);
     }
 
-    /* Screen Shake */
+    /* Screen Shake — applied to a wrapper, not body, to avoid transform conflicts */
+    #shake-wrapper {
+      display: contents;
+    }
+
     @keyframes intenseShake {
-      0% { transform: translate(2px, 2px) rotate(0deg); }
-      20% { transform: translate(-2px, -3px) rotate(-1deg); }
-      40% { transform: translate(-3px, 0px) rotate(1deg); }
-      60% { transform: translate(3px, 2px) rotate(0deg); }
-      80% { transform: translate(2px, -2px) rotate(1deg); }
+      0%   { transform: translate(2px, 2px) rotate(0deg); }
+      20%  { transform: translate(-2px, -3px) rotate(-1deg); }
+      40%  { transform: translate(-3px, 0px) rotate(1deg); }
+      60%  { transform: translate(3px, 2px) rotate(0deg); }
+      80%  { transform: translate(2px, -2px) rotate(1deg); }
       100% { transform: translate(-2px, 2px) rotate(-1deg); }
     }
 
     .shake {
-      animation: intenseShake 0.3s infinite;
+      animation: intenseShake 0.3s infinite !important;
       filter: hue-rotate(10deg) saturate(1.2);
     }
 
     /* Fullscreen Image Viewer */
     .fullscreen-viewer {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
       background: rgba(0, 0, 0, 0.95);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      display: none;
+      display: flex;
       justify-content: center;
       align-items: center;
       z-index: 10000;
+      /* fade via opacity + visibility instead of display toggle */
       opacity: 0;
-      transition: opacity 0.3s ease;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      pointer-events: none;
     }
 
     .fullscreen-viewer.active {
-      display: flex;
       opacity: 1;
+      visibility: visible;
+      pointer-events: all;
     }
 
     .fullscreen-image {
@@ -365,22 +363,14 @@
     }
 
     @keyframes zoomIn {
-      from {
-        opacity: 0;
-        transform: scale(0.8);
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
+      from { opacity: 0; transform: scale(0.8); }
+      to   { opacity: 1; transform: scale(1); }
     }
 
     .close-btn {
       position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 50px;
-      height: 50px;
+      top: 20px; right: 20px;
+      width: 50px; height: 50px;
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -400,29 +390,21 @@
       transform: scale(1.1);
     }
 
-    .close-btn::before,
-    .close-btn::after {
+    .close-btn::before, .close-btn::after {
       content: '';
       position: absolute;
-      width: 24px;
-      height: 2px;
+      width: 24px; height: 2px;
       background: #fff;
-      transition: all 0.3s ease;
     }
 
-    .close-btn::before {
-      transform: rotate(45deg);
-    }
-
-    .close-btn::after {
-      transform: rotate(-45deg);
-    }
+    .close-btn::before { transform: rotate(45deg); }
+    .close-btn::after  { transform: rotate(-45deg); }
 
     /* Grid & Cards */
     #grid-container {
       display: none;
       grid-template-columns: 1fr;
-      gap: 30px;
+      gap: 24px;
       width: 100%;
       max-width: 450px;
       margin-top: 10px;
@@ -443,8 +425,7 @@
       border: 1px solid var(--glass-border);
       border-radius: 24px;
       padding: 24px;
-      margin: 16px 0;
-      max-width: 380px;
+      /* removed margin — gap on grid handles spacing */
       width: 100%;
       display: flex;
       flex-direction: column;
@@ -452,15 +433,20 @@
       text-align: center;
       position: relative;
       overflow: hidden;
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
       min-height: 420px;
+      opacity: 0;
     }
 
-    /* Spring Animation for Cards */
+    .glass-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
+    }
+
     @keyframes popInSpring {
-      0% { opacity: 0; transform: scale(0.8) translateY(50px); }
-      60% { opacity: 1; transform: scale(1.05) translateY(-10px); }
+      0%   { opacity: 0; transform: scale(0.8) translateY(50px); }
+      60%  { opacity: 1; transform: scale(1.05) translateY(-10px); }
       100% { opacity: 1; transform: scale(1) translateY(0); }
     }
 
@@ -473,7 +459,7 @@
       margin-bottom: 16px;
       border: 2px solid rgba(255, 255, 255, 0.15);
       box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-      transition: all 0.3s ease;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
       cursor: pointer;
     }
 
@@ -500,44 +486,29 @@
       font-weight: 400;
     }
 
-    /* Message Card Styling */
+    /* Message Card */
     .message-card {
-      background: linear-gradient(135deg, rgba(255, 179, 217, 0.2), rgba(230, 179, 255, 0.2));
+      background: linear-gradient(135deg, rgba(255,179,217,0.2), rgba(230,179,255,0.2));
       border: 2px solid var(--soft-pink);
-      box-shadow: 0 15px 40px rgba(255, 179, 217, 0.3), inset 0 0 30px rgba(255, 255, 255, 0.2);
-      position: relative;
-      overflow: hidden;
-      min-height: 420px;
+      box-shadow: 0 15px 40px rgba(255,179,217,0.3), inset 0 0 30px rgba(255,255,255,0.2);
     }
 
     .message-card::before {
       content: '💌';
       position: absolute;
-      top: 10px;
-      right: 15px;
+      top: 10px; right: 15px;
       font-size: 1.5rem;
       opacity: 0.6;
     }
 
-    .message-card h3 {
-      color: var(--soft-pink);
-      text-shadow: 0 0 10px rgba(255, 179, 217, 0.5);
-    }
+    .message-card h3 { text-shadow: 0 0 10px rgba(255,179,217,0.5); }
+    .message-card p  { font-style: italic; line-height: 1.6; font-size: 0.9rem; }
 
-    .message-card p {
-      color: #fff;
-      font-style: italic;
-      line-height: 1.6;
-      font-size: 0.9rem;
-    }
-
-    /* Prime Card Styling */
+    /* Prime Card */
     .prime-card {
-      background: linear-gradient(135deg, rgba(255, 105, 180, 0.15), rgba(155, 89, 182, 0.15));
+      background: linear-gradient(135deg, rgba(255,105,180,0.15), rgba(155,89,182,0.15));
       border: 2px solid var(--soft-pink);
-      box-shadow: 0 15px 40px rgba(255, 105, 180, 0.3), inset 0 0 30px rgba(255, 255, 255, 0.15);
-      position: relative;
-      overflow: hidden;
+      box-shadow: 0 15px 40px rgba(255,105,180,0.3), inset 0 0 30px rgba(255,255,255,0.15);
     }
 
     .prime-card::after {
@@ -549,9 +520,7 @@
       z-index: -1;
     }
 
-    @keyframes rotate {
-      100% { transform: rotate(360deg); }
-    }
+    @keyframes rotate { 100% { transform: rotate(360deg); } }
 
     .prime-card h3 {
       color: #fff;
@@ -559,31 +528,27 @@
       font-size: 1.6rem;
     }
 
-    .prime-card p {
-      color: #fff;
-      font-weight: 700;
-      font-size: 1.1rem;
-    }
+    .prime-card p { font-weight: 700; font-size: 1.1rem; }
 
     .prime-card .action-btn {
       background: linear-gradient(45deg, var(--purple-neon), var(--pink-neon));
       border: none;
-      box-shadow: 0 5px 20px rgba(255, 105, 180, 0.5);
+      box-shadow: 0 5px 20px rgba(255,105,180,0.5);
       margin-top: auto;
       font-size: 1.1rem;
       padding: 18px;
       animation: none;
     }
 
-    #reward-code {
-      display: none; 
+    .reward-code {
+      display: none;
       background: rgba(0,0,0,0.5);
       padding: 20px;
       border-radius: 16px;
       border: 2px dashed var(--soft-pink);
-      color: #fff; 
-      margin-top: 15px; 
-      font-weight: 900; 
+      color: #fff;
+      margin-top: 15px;
+      font-weight: 900;
       font-size: 1.2rem;
       width: 100%;
       text-shadow: 0 0 10px var(--pink-neon);
@@ -593,10 +558,7 @@
 </head>
 <body>
 
-  <!-- Background Particles -->
   <canvas id="particle-canvas"></canvas>
-  
-  <!-- Scanning Laser -->
   <div id="scan-laser"></div>
 
   <h1>✨ Multiverse Scanner ✨</h1>
@@ -616,7 +578,7 @@
         <path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>
       </svg>
     </div>
-    <div class="instruction-text">Press & Hold Fingerprint</div>
+    <div class="instruction-text">Press &amp; Hold Fingerprint</div>
     <div id="progress-bar">
       <div id="progress-fill"></div>
     </div>
@@ -625,28 +587,22 @@
 
   <div id="grid-container"></div>
 
-  <!-- Fullscreen Image Viewer -->
   <div id="fullscreen-viewer" class="fullscreen-viewer">
     <div class="close-btn" onclick="closeFullscreen()"></div>
-    <img id="fullscreen-image" class="fullscreen-image" src="" alt="">
+    <img id="fullscreen-image" class="fullscreen-image" src="" alt="Fullscreen view">
   </div>
 
   <script>
     // ==========================================
-    // CONFIGURATION: EDIT PHOTOS AND JOKES HERE
+    // CONFIGURATION
     // ==========================================
-    
-    // ⚠️ IMPORTANT INSTRUCTION FOR THE IMAGE ⚠️
-    // 1. Save the image of Prachi you uploaded to the same folder as this file, name it "prachi.jpg"
-    // 2. Change the URL below to "./prachi.jpg"
-    // (I am using a beautiful aesthetic placeholder so the app works immediately!)
-    const PRACHI_IMAGE_URL = "./images/main.png"; 
-    
+    const PRACHI_IMAGE_URL = "./images/main.png";
+
     const imagePool = [
       PRACHI_IMAGE_URL,
-      "./images/prank1.png", 
-      "./images/prank2.png", 
-      "./images/prank3.png", 
+      "./images/prank1.png",
+      "./images/prank2.png",
+      "./images/prank3.png",
       "./images/prank4.png",
       "./images/prank5.png",
       "./images/prank6.png",
@@ -654,24 +610,22 @@
       "./images/prank8.png",
       "./images/prank9.png",
       "./images/prank10.png"
-
-
     ];
 
     const insideJokes = [
-      { title: "Superhero Prachi", bio: "Saves the world before breakfast, still has time for perfect eyeliner." },
-      { title: "Chef Prachi", bio: "Can make anything delicious. Even broccoli tastes like pizza in her kitchen." },
-      { title: "Genius Prachi", bio: "IQ higher than WiFi signal. Solves quantum physics for fun." },
+      { title: "Superhero Prachi",    bio: "Saves the world before breakfast, still has time for perfect eyeliner." },
+      { title: "Chef Prachi",         bio: "Can make anything delicious. Even broccoli tastes like pizza in her kitchen." },
+      { title: "Genius Prachi",       bio: "IQ higher than WiFi signal. Solves quantum physics for fun." },
       { title: "Fashion Icon Prachi", bio: "Even sweatpants look like couture when she wears them." },
-      { title: "Comedian Prachi", bio: "So funny that even comedians come to her for material." },
-      { title: "Artist Prachi", bio: "Paints masterpieces while sleeping. Mona Lisa is jealous." },
+      { title: "Comedian Prachi",     bio: "So funny that even comedians come to her for material." },
+      { title: "Artist Prachi",       bio: "Paints masterpieces while sleeping. Mona Lisa is jealous." },
       { title: "Music Legend Prachi", bio: "Voice so beautiful, birds stop to listen when she sings." },
-      { title: "Inspirational Prachi", bio: "Motivational speaker. TED talks call her for advice." }
+      { title: "Inspirational Prachi",bio: "Motivational speaker. TED talks call her for advice." }
     ];
     // ==========================================
 
 
-    // --- 1. MAGICAL PARTICLE BACKGROUND ---
+    // --- 1. PARTICLE BACKGROUND ---
     const canvas = document.getElementById('particle-canvas');
     const ctx = canvas.getContext('2d');
     let particles = [];
@@ -684,9 +638,10 @@
     resizeCanvas();
 
     class Particle {
-      constructor() {
+      constructor() { this.reset(true); }
+      reset(randomY = false) {
         this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
+        this.y = randomY ? Math.random() * canvas.height : canvas.height;
         this.size = Math.random() * 2 + 0.5;
         this.speedY = Math.random() * -0.5 - 0.1;
         this.speedX = (Math.random() - 0.5) * 0.5;
@@ -695,10 +650,7 @@
       update() {
         this.y += this.speedY;
         this.x += this.speedX;
-        if (this.y < 0) {
-          this.y = canvas.height;
-          this.x = Math.random() * canvas.width;
-        }
+        if (this.y < 0) this.reset();
       }
       draw() {
         ctx.fillStyle = `rgba(255, 154, 158, ${this.opacity})`;
@@ -718,382 +670,319 @@
     animateParticles();
 
 
-    // --- 2. WEB AUDIO API SOUND ENGINE ---
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    let audioCtx;
-    let scanOsc, scanGain;
+    // --- 2. AUDIO ENGINE ---
+    let audioCtx = null;
     let audioReady = false;
+    let scanOsc = null;
+    let scanGain = null;
 
     async function initAudio() {
       if (!audioCtx) {
-        audioCtx = new AudioContext();
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       }
       if (audioCtx.state === 'suspended') {
         await audioCtx.resume();
       }
-      audioReady = audioCtx.state === 'running';
+      audioReady = (audioCtx.state === 'running');
     }
 
-    // Initialize audio on first user interaction
-    async function initAudioOnInteraction() {
-      await initAudio();
-    }
-
-    async function playTone(freq, type, duration, vol = 0.1) {
+    // Fire-and-forget tone — safe to call without await
+    function playTone(freq, type, duration, vol = 0.1) {
+      if (!audioReady || !audioCtx) return;
       try {
-        await initAudio();
-        if (!audioReady) return;
-        
-        const osc = audioCtx.createOscillator();
+        const osc  = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = type;
         osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
         gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
         osc.connect(gain);
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + duration);
-      } catch (error) {
-        console.log('Audio not supported or blocked');
-      }
+      } catch (e) { /* silently ignore */ }
     }
 
-    async function startScanSound() {
+    function startScanSound() {
+      if (!audioReady || !audioCtx) return;
+      // Stop any previous scan oscillator cleanly
+      stopScanSound();
       try {
-        await initAudio();
-        if (!audioReady) return;
-        
-        scanOsc = audioCtx.createOscillator();
+        scanOsc  = audioCtx.createOscillator();
         scanGain = audioCtx.createGain();
         scanOsc.type = 'triangle';
-        // Pitch goes up as progress increases
         scanOsc.frequency.setValueAtTime(150, audioCtx.currentTime);
-        scanOsc.frequency.linearRampToValueAtTime(600, audioCtx.currentTime + 5); 
+        scanOsc.frequency.linearRampToValueAtTime(600, audioCtx.currentTime + 5);
         scanGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
         scanOsc.connect(scanGain);
         scanGain.connect(audioCtx.destination);
         scanOsc.start();
-      } catch (error) {
-        console.log('Scan sound not supported');
-      }
+      } catch (e) { scanOsc = null; scanGain = null; }
     }
 
     function stopScanSound() {
+      if (!scanOsc) return;
       try {
-        if (scanGain && audioCtx && audioReady) {
-          scanGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
-          setTimeout(() => { if (scanOsc) scanOsc.stop(); }, 100);
+        if (scanGain && audioCtx) {
+          scanGain.gain.setValueAtTime(scanGain.gain.value, audioCtx.currentTime);
+          scanGain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.15);
         }
-      } catch (error) {
-        console.log('Stop scan sound failed');
-      }
+        const oscToStop = scanOsc;
+        setTimeout(() => { try { oscToStop.stop(); } catch(e){} }, 200);
+      } catch (e) { /* ignore */ }
+      scanOsc = null;
+      scanGain = null;
     }
 
-    async function playSuccessSound() {
-      try {
-        await initAudio();
-        if (!audioReady) return;
-        
-        // Magical ascending chord
-        playTone(440, 'sine', 0.8, 0.1); // A4
-        setTimeout(() => playTone(554.37, 'sine', 0.8, 0.1), 100); // C#5
-        setTimeout(() => playTone(659.25, 'sine', 1.0, 0.15), 200); // E5
-        setTimeout(() => playTone(880, 'sine', 1.5, 0.2), 350); // A5
-      } catch (error) {
-        console.log('Success sound not supported');
-      }
+    function playSuccessSound() {
+      if (!audioReady) return;
+      playTone(440,    'sine', 0.8, 0.10);
+      setTimeout(() => playTone(554.37, 'sine', 0.8, 0.10), 120);
+      setTimeout(() => playTone(659.25, 'sine', 1.0, 0.15), 260);
+      setTimeout(() => playTone(880,    'sine', 1.5, 0.20), 420);
     }
 
-    async function playErrorSound() {
-      try {
-        await initAudio();
-        if (!audioReady) return;
-        
-        playTone(300, 'sawtooth', 0.3, 0.05);
-        setTimeout(() => playTone(200, 'sawtooth', 0.4, 0.05), 150);
-      } catch (error) {
-        console.log('Error sound not supported');
-      }
+    function playErrorSound() {
+      if (!audioReady) return;
+      playTone(300, 'sawtooth', 0.3, 0.05);
+      setTimeout(() => playTone(200, 'sawtooth', 0.4, 0.05), 160);
+    }
+
+    function playAlertBeep() {
+      if (!audioReady) return;
+      playTone(1200, 'square', 0.15, 0.04);
+      setTimeout(() => playTone(1000, 'square', 0.15, 0.04), 180);
+    }
+
+    function playClaimSound() {
+      if (!audioReady) return;
+      playTone(600, 'sine', 0.15, 0.10);
+      setTimeout(() => playTone(800,  'sine', 0.20, 0.12), 120);
+      setTimeout(() => playTone(1000, 'sine', 0.30, 0.15), 260);
     }
 
 
-    // --- 3. SCANNING LOGIC & ANIMATIONS ---
-    const scanBtn = document.getElementById('scan-btn');
-    const progressFill = document.getElementById('progress-fill');
-    const logText = document.getElementById('log-text');
+    // --- 3. SCANNING LOGIC ---
+    const scanBtn          = document.getElementById('scan-btn');
+    const progressFill     = document.getElementById('progress-fill');
+    const logText          = document.getElementById('log-text');
     const scannerContainer = document.getElementById('scanner-container');
-    const gridContainer = document.getElementById('grid-container');
-    const scanLaser = document.getElementById('scan-laser');
+    const gridContainer    = document.getElementById('grid-container');
+    const scanLaser        = document.getElementById('scan-laser');
 
-    let progress = 0;
-    let scanInterval;
-    let flashTimeout;
-    let hasFlashed = false;
-    let isScanning = false;
+    let progress    = 0;
+    let scanInterval = null;
+    let flashTimeout = null;
+    let hasFlashed  = false;
+    let isScanning  = false;
 
     async function startScan(e) {
-      if (e.cancelable) e.preventDefault(); 
-      if (progress >= 100 || isScanning) return;
-      
+      if (e.cancelable) e.preventDefault();
+      if (isScanning || progress >= 100) return;
+
+      // Init audio first — must happen inside user gesture handler
       await initAudio();
-      playTone(800, 'sine', 0.1, 0.1); // Initial beep
-      
+
       isScanning = true;
       scanBtn.classList.add('active-state');
-      document.body.classList.add('shake');
-      
-      // Show laser
+      scannerContainer.classList.add('shake');
+
       scanLaser.style.display = 'block';
       scanLaser.style.animation = 'laserSweep 1s linear infinite';
 
-      logText.innerText = "> SCANNING MULTIVERSE FREQUENCIES...";
-      logText.style.color = "var(--rose-gold)";
+      logText.innerText = '> SCANNING MULTIVERSE FREQUENCIES...';
+      logText.style.color = 'var(--rose-gold)';
       logText.classList.remove('flash-text');
-      
+
+      playTone(800, 'sine', 0.12, 0.10); // start beep
       startScanSound();
-      
+
       scanInterval = setInterval(() => {
-        progress += 1; 
+        progress += 1;
         progressFill.style.width = `${progress}%`;
-        
-        // CRITICAL REQUIREMENT: Flash text at 50%
+
         if (progress === 50 && !hasFlashed) {
           hasFlashed = true;
-          logText.innerText = "⚠️ TARGET: Prachi. Status: Currently being pranked. Value: Priceless.";
+          logText.innerText = '⚠️ TARGET: Prachi. Status: Currently being pranked. Value: Priceless.';
           logText.classList.add('flash-text');
-          playTone(1200, 'square', 0.2, 0.05); // Alert beep
-          
+          playAlertBeep();
+
           flashTimeout = setTimeout(() => {
             if (isScanning && progress < 100) {
-              logText.innerText = "> RESUMING SCAN...";
+              logText.innerText = '> RESUMING SCAN...';
               logText.classList.remove('flash-text');
-              logText.style.color = "var(--rose-gold)";
+              logText.style.color = 'var(--rose-gold)';
             }
           }, 2000);
         }
-        
-        if (progress >= 100) {
-          completeScan();
-        }
+
+        if (progress >= 100) completeScan();
       }, 50);
     }
 
-    function stopScan(e) {
+    function stopScan() {
       if (!isScanning) return;
-      if (progress >= 100) return;
-      
+
       isScanning = false;
       scanBtn.classList.remove('active-state');
+      scannerContainer.classList.remove('shake');
       clearInterval(scanInterval);
       clearTimeout(flashTimeout);
-      document.body.classList.remove('shake');
+      scanInterval = null;
+
       scanLaser.style.display = 'none';
-      
       stopScanSound();
+
       if (progress > 0) playErrorSound();
 
       progress = 0;
       progressFill.style.width = '0%';
       hasFlashed = false;
       logText.classList.remove('flash-text');
-      logText.innerText = "SCAN INTERRUPTED. HOLD TO RESTART.";
-      logText.style.color = "var(--pink-light)";
+      logText.innerText = 'SCAN INTERRUPTED. HOLD TO RESTART.';
+      logText.style.color = 'var(--pink-light)';
     }
 
-    // Add global listeners to initialize audio on first interaction
-    document.addEventListener('click', initAudioOnInteraction, { once: true });
-    document.addEventListener('touchstart', initAudioOnInteraction, { once: true });
+    // Init audio on very first interaction so context is ready before scan
+    document.addEventListener('click',      initAudio, { once: true });
+    document.addEventListener('touchstart', initAudio, { once: true, passive: true });
 
-    scanBtn.addEventListener('mousedown', startScan);
-    scanBtn.addEventListener('touchstart', startScan, {passive: false});
-    
-    window.addEventListener('mouseup', stopScan);
-    window.addEventListener('touchend', stopScan);
+    scanBtn.addEventListener('mousedown',  startScan);
+    scanBtn.addEventListener('touchstart', startScan, { passive: false });
+
+    // Stop on mouseup/touchend — NOT on mouseleave (too jarring)
+    window.addEventListener('mouseup',     stopScan);
+    window.addEventListener('touchend',    stopScan);
     window.addEventListener('touchcancel', stopScan);
-    window.addEventListener('mouseleave', stopScan);
 
     function completeScan() {
       isScanning = false;
       scanBtn.classList.remove('active-state');
+      scannerContainer.classList.remove('shake');
       clearInterval(scanInterval);
-      document.body.classList.remove('shake');
+      scanInterval = null;
       scanLaser.style.display = 'none';
-      
+
       stopScanSound();
       playSuccessSound();
 
-      // Fade out scanner, fade in grid
-      scannerContainer.style.transition = "opacity 0.5s ease";
-      scannerContainer.style.opacity = "0";
-      
+      scannerContainer.style.transition = 'opacity 0.5s ease';
+      scannerContainer.style.opacity = '0';
+
       setTimeout(() => {
         scannerContainer.style.display = 'none';
         gridContainer.style.display = 'grid';
-        document.querySelector('.subtitle').innerText = "Matches found in 4 dimensions!";
+        document.querySelector('.subtitle').innerText = 'Matches found in 4 dimensions!';
         generateCards();
       }, 500);
     }
 
+
+    // --- 4. CARD GENERATION ---
     function generateCards() {
-      const shuffledJokes = [...insideJokes].sort(() => 0.5 - Math.random()).slice(0, 3);
+      const shuffledJokes  = [...insideJokes].sort(() => 0.5 - Math.random()).slice(0, 3);
       const shuffledImages = [...imagePool].sort(() => 0.5 - Math.random());
-      
-      shuffledJokes.forEach((joke, index) => {
-        const uniqueImg = shuffledImages[index];
-        createCard(joke.title, joke.bio, uniqueImg, false, index);
+
+      shuffledJokes.forEach((joke, i) => {
+        createCard(joke.title, joke.bio, shuffledImages[i], false, i);
       });
-      
-      // Prime Card (Always 4th)
+
       createCard(
-        "Prime Universe (This One🫵🫶)", 
-        "Prachi. Status: Currently being pranked. Value: Priceless. Even angels gets jelous of her🪽", 
-        PRACHI_IMAGE_URL, 
-        true, 
-        3 
+        'Prime Universe (This One🫵🫶)',
+        'Prachi. Status: Currently being pranked. Value: Priceless. Even angels get jealous of her 🪽',
+        PRACHI_IMAGE_URL, true, 3
       );
-      
-      // Message Card (Always 5th)
+
       createCard(
-        "A Special Message 🌟", 
-        "Dear Prachi💖, you're amazing in every universe✨! This multiverse scanner found the best version of you in every dimension👾. Hope you enjoyed this little adventure! Happy April Fool's Day! 🎐", 
-        "./images/main.png", 
-        'message', 
-        4 
+        'A Special Message 🌟',
+        'Dear Prachi💖, you\'re amazing in every universe✨! This multiverse scanner found the best version of you in every dimension👾. Hope you enjoyed this little adventure! Happy April Fool\'s Day! 🎐',
+        './images/main.png', 'message', 4
       );
-      
-      // Bonus Card (Always 6th)
+
       createCard(
-        "Dimensional Analysis 📊", 
-        "Dekho chahta to asal me ullu banata. But but... is time tumko overthinking nhi de sakta tha. Isiliye yee. Ab acche se padhai karna, aur jaise jaise time pass aata h anxiety badhti hai. Tum ye yaad rakhna ki tumne bohot mehnat kari h aur tum superman ho..!! Sab accha hi hoga and go with the flow. Apna aur apne pair ka dhyn rakho bohot jyda.. Aur haa you're the best, Always Remember🫶", 
-        "./images/main2.png", 
-        false, 
-        5 
+        'Dimensional Analysis 📊',
+        'Dekho chahta to asal me ullu banata. But but... is time tumko overthinking nhi de sakta tha. Isiliye yee. Ab acche se padhai karna, aur jaise jaise time pass aata h anxiety badhti hai. Tum ye yaad rakhna ki tumne bohot mehnat kari h aur tum superman ho..!! Sab accha hi hoga and go with the flow. Apna aur apne pair ka dhyan rakho bohot jyda.. Aur haa you\'re the best, Always Remember 🫶',
+        './images/main2.png', false, 5
       );
-      
-      // Grand Confetti Finale
+
+      // Confetti finale after cards appear
       setTimeout(() => {
-        const duration = 3000;
-        const end = Date.now() + duration;
-
+        const end = Date.now() + 3000;
         (function frame() {
-          confetti({
-            particleCount: 5,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0 },
-            colors: ['#ff1493', '#8e2de2', '#ff9a9e', '#ffffff']
-          });
-          confetti({
-            particleCount: 5,
-            angle: 120,
-            spread: 55,
-            origin: { x: 1 },
-            colors: ['#ff1493', '#8e2de2', '#ff9a9e', '#ffffff']
-          });
-
-          if (Date.now() < end) {
-            requestAnimationFrame(frame);
-          }
+          confetti({ particleCount: 5, angle: 60,  spread: 55, origin: { x: 0 }, colors: ['#ff1493','#8e2de2','#ff9a9e','#ffffff'] });
+          confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff1493','#8e2de2','#ff9a9e','#ffffff'] });
+          if (Date.now() < end) requestAnimationFrame(frame);
         }());
-      }, 3 * 250 + 600); 
+      }, 3 * 250 + 600);
     }
 
     function createCard(title, bio, imgUrl, isPrime, delayIndex) {
       const card = document.createElement('div');
-      let cardClass = 'glass-card';
-      
-      if (isPrime === true) {
-        cardClass += ' prime-card';
-      } else if (isPrime === 'message') {
-        cardClass += ' message-card';
-      }
-      
-      card.className = cardClass;
-      // Use the new spring animation
+      let cls = 'glass-card';
+      if (isPrime === true)       cls += ' prime-card';
+      else if (isPrime === 'message') cls += ' message-card';
+      card.className = cls;
       card.style.animation = `popInSpring 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) ${delayIndex * 0.2}s forwards`;
-      
-      let innerHTML = `
-        <img src="${imgUrl}" alt="${title}">
+
+      card.innerHTML = `
+        <img src="${imgUrl}" alt="${title}" loading="lazy">
         <h3>${title}</h3>
         <p>${bio}</p>
-      `;
-      
-      if (isPrime === true) {
-        innerHTML += `
-          <button id="claim-btn" class="action-btn">CLAIM REWARD 🎁</button>
-          <div id="reward-code">
+        ${isPrime === true ? `
+          <button class="claim-btn action-btn">CLAIM REWARD 🎁</button>
+          <div class="reward-code">
             CODE: PRACHI-OWES-NOTHING<br>
-            <span style="font-size: 0.85rem; color: #fbc2eb; font-weight: normal; font-family: sans-serif;">(Redeem for 1 Free Coffee/Dinner)</span>
-          </div>
-        `;
-      }
-      
-      card.innerHTML = innerHTML;
+            <span style="font-size:0.85rem;color:#fbc2eb;font-weight:normal;font-family:sans-serif;">(Redeem for 1 Free Coffee/Dinner)</span>
+          </div>` : ''}
+      `;
+
       gridContainer.appendChild(card);
-      
-      // Add click event to image for fullscreen view
-      const cardImage = card.querySelector('img');
-      if (cardImage) {
-        cardImage.addEventListener('click', () => {
-          openFullscreen(cardImage.src);
-        });
-      }
-      
+
+      // Fullscreen on image click
+      card.querySelector('img').addEventListener('click', () => {
+        openFullscreen(imgUrl);
+      });
+
+      // Claim button
       if (isPrime === true) {
-        const claimBtn = card.querySelector('#claim-btn');
-        const rewardCode = card.querySelector('#reward-code');
+        const claimBtn   = card.querySelector('.claim-btn');
+        const rewardCode = card.querySelector('.reward-code');
         claimBtn.addEventListener('click', () => {
-          playTone(600, 'sine', 0.1, 0.1);
-          setTimeout(() => playTone(800, 'sine', 0.2, 0.1), 100);
-          
+          playClaimSound();
           claimBtn.style.display = 'none';
           rewardCode.style.display = 'block';
-          
           confetti({
             particleCount: 150,
             spread: 100,
             origin: { y: 0.7 },
-            colors: ['#ff9a9e', '#fbc2eb', '#ffffff'],
+            colors: ['#ff9a9e','#fbc2eb','#ffffff'],
             zIndex: 1000
           });
         });
       }
     }
 
-    // Fullscreen Image Viewer Functions
-    function openFullscreen(imageSrc) {
+
+    // --- 5. FULLSCREEN VIEWER ---
+    function openFullscreen(src) {
       const viewer = document.getElementById('fullscreen-viewer');
-      const fullscreenImage = document.getElementById('fullscreen-image');
-      
-      fullscreenImage.src = imageSrc;
+      const img    = document.getElementById('fullscreen-image');
+      img.src = src;
       viewer.classList.add('active');
       document.body.style.overflow = 'hidden';
-      
-      // Add escape key listener
-      document.addEventListener('keydown', handleEscapeKey);
     }
 
     function closeFullscreen() {
-      const viewer = document.getElementById('fullscreen-viewer');
-      viewer.classList.remove('active');
-      document.body.style.overflow = 'auto';
-      
-      // Remove escape key listener
-      document.removeEventListener('keydown', handleEscapeKey);
+      document.getElementById('fullscreen-viewer').classList.remove('active');
+      document.body.style.overflow = '';
     }
 
-    function handleEscapeKey(event) {
-      if (event.key === 'Escape') {
-        closeFullscreen();
-      }
-    }
+    document.getElementById('fullscreen-viewer').addEventListener('click', function(e) {
+      if (e.target === this) closeFullscreen();
+    });
 
-    // Close on background click
-    document.getElementById('fullscreen-viewer').addEventListener('click', function(event) {
-      if (event.target === this) {
-        closeFullscreen();
-      }
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeFullscreen();
     });
   </script>
 </body>
