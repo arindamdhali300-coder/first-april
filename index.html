@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Multiverse ID Scanner</title>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    :root {
+      --pink-light: #ff9a9e;
+      --pink-neon: #ff1493;
+      --purple-deep: #2a0845;
+      --purple-neon: #8e2de2;
+      --rose-gold: #fbc2eb;
+      --glass-bg: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.2);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0f0c29, #302b63, #240b36);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      color: #fff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      text-align: center;
+      user-select: none;
+      -webkit-user-select: none;
+      padding: env(safe-area-inset-top) 20px env(safe-area-inset-bottom);
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Magical Particle Background */
+    #particle-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Scanning Laser Line */
+    #scan-laser {
+      position: fixed;
+      top: -10px;
+      left: 0;
+      width: 100vw;
+      height: 3px;
+      background: var(--pink-neon);
+      box-shadow: 0 0 20px 5px rgba(255, 20, 147, 0.6), 0 0 40px 10px rgba(142, 45, 226, 0.4);
+      z-index: 999;
+      display: none;
+      pointer-events: none;
+    }
+
+    @keyframes laserSweep {
+      0% { top: 0; opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { top: 100vh; opacity: 0; }
+    }
+
+    /* Intro Animations */
+    h1 {
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      font-weight: 900;
+      font-size: 2rem;
+      background: linear-gradient(to right, var(--pink-light), var(--rose-gold), var(--pink-neon));
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shine 3s linear infinite, slideDown 1s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+      margin-top: 8vh;
+      margin-bottom: 15px;
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+
+    @keyframes shine {
+      to { background-position: 200% center; }
+    }
+
+    @keyframes slideDown {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: var(--rose-gold);
+      opacity: 0;
+      margin-bottom: 40px;
+      letter-spacing: 2px;
+      animation: slideDown 1s cubic-bezier(0.25, 0.8, 0.25, 1) 0.3s forwards;
+      transform: translateY(-20px);
+    }
+
+    #scanner-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-grow: 1;
+      width: 100%;
+      max-width: 400px;
+      padding-bottom: 10vh;
+      opacity: 0;
+      animation: fadeIn 1s ease 0.6s forwards;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    /* The Button */
+    .action-btn {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-top: 1px solid rgba(255, 255, 255, 0.6);
+      color: #fff;
+      padding: 22px 40px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      border-radius: 50px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 20, 147, 0.2);
+      touch-action: manipulation;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      animation: breathe 3s infinite alternate;
+    }
+
+    @keyframes breathe {
+      0% { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 20, 147, 0.2); }
+      100% { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 35px rgba(142, 45, 226, 0.6); }
+    }
+
+    .action-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 50%; height: 100%;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent);
+      transform: skewX(-25deg);
+      transition: 0.5s;
+    }
+
+    .action-btn:hover::before {
+      left: 200%;
+    }
+
+    .action-btn:active, .action-btn.active-state {
+      transform: scale(0.92);
+      background: rgba(255, 20, 147, 0.4);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), 0 0 40px rgba(255, 20, 147, 0.8);
+      border-color: var(--pink-light);
+      animation: none;
+    }
+
+    /* Biometric Button */
+    .biometric-btn {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(255, 20, 147, 0.2), inset 0 0 20px rgba(255, 20, 147, 0.1);
+      transition: all 0.3s ease;
+      animation: pulseGlow 2s infinite alternate;
+      touch-action: manipulation;
+      margin: 0 auto;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 20px rgba(255, 20, 147, 0.2), inset 0 0 20px rgba(255, 20, 147, 0.1); }
+      100% { box-shadow: 0 0 40px rgba(142, 45, 226, 0.5), inset 0 0 40px rgba(142, 45, 226, 0.4); }
+    }
+
+    .biometric-btn svg {
+      width: 55px;
+      height: 55px;
+      stroke: rgba(255, 255, 255, 0.6);
+      transition: all 0.3s ease;
+      z-index: 2;
+    }
+
+    .biometric-btn.active-state {
+      transform: scale(0.92);
+      border-color: var(--pink-neon);
+      box-shadow: 0 0 50px var(--pink-neon), inset 0 0 50px var(--pink-neon);
+      animation: none;
+    }
+
+    .biometric-btn.active-state svg {
+      stroke: #fff;
+      filter: drop-shadow(0 0 8px var(--pink-neon));
+    }
+
+    .biometric-btn::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: #fff;
+      box-shadow: 0 0 15px 5px var(--pink-neon);
+      opacity: 0;
+      z-index: 3;
+      transition: opacity 0.3s;
+    }
+
+    .biometric-btn.active-state::after {
+      opacity: 1;
+      animation: scanFingerprint 1.5s linear infinite;
+    }
+
+    @keyframes scanFingerprint {
+      0% { top: -10%; }
+      50% { top: 100%; }
+      100% { top: -10%; }
+    }
+
+    .instruction-text {
+      margin-top: 25px;
+      font-size: 0.95rem;
+      color: var(--rose-gold);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      font-weight: 700;
+      animation: fadeIn 1s ease 0.8s forwards;
+      opacity: 0;
+    }
+
+    /* Progress Bar */
+    #progress-bar {
+      width: 100%;
+      height: 28px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      margin-top: 40px;
+      overflow: hidden;
+      box-shadow: inset 0 3px 6px rgba(0,0,0,0.6);
+      position: relative;
+    }
+
+    #progress-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--purple-neon), var(--pink-neon), var(--pink-light));
+      background-size: 200% 100%;
+      box-shadow: 0 0 20px var(--pink-neon);
+      border-radius: 14px;
+      transition: width 0.05s linear;
+      animation: flow 2s linear infinite;
+    }
+
+    @keyframes flow {
+      0% { background-position: 100% 0; }
+      100% { background-position: -100% 0; }
+    }
+
+    /* Terminal Log */
+    #log-text {
+      margin-top: 25px;
+      font-size: 0.9rem;
+      min-height: 3rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: var(--rose-gold);
+      font-family: 'Courier New', Courier, monospace;
+      padding: 0 15px;
+      transition: all 0.3s ease;
+    }
+
+    .flash-text {
+      color: #fff !important;
+      text-shadow: 0 0 15px var(--pink-neon), 0 0 30px var(--pink-neon) !important;
+      transform: scale(1.05);
+    }
+
+    /* Screen Shake */
+    @keyframes intenseShake {
+      0% { transform: translate(2px, 2px) rotate(0deg); }
+      20% { transform: translate(-2px, -3px) rotate(-1deg); }
+      40% { transform: translate(-3px, 0px) rotate(1deg); }
+      60% { transform: translate(3px, 2px) rotate(0deg); }
+      80% { transform: translate(2px, -2px) rotate(1deg); }
+      100% { transform: translate(-2px, 2px) rotate(-1deg); }
+    }
+
+    .shake {
+      animation: intenseShake 0.3s infinite;
+      filter: hue-rotate(10deg) saturate(1.2);
+    }
+
+    /* Grid & Cards */
+    #grid-container {
+      display: none;
+      grid-template-columns: 1fr;
+      gap: 30px;
+      width: 100%;
+      max-width: 450px;
+      margin-top: 10px;
+      padding-bottom: 60px;
+    }
+
+    @media (min-width: 768px) {
+      #grid-container {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 900px;
+      }
+    }
+
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-top: 1px solid rgba(255, 255, 255, 0.5);
+      border-left: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 28px;
+      padding: 25px;
+      color: #fff;
+      opacity: 0;
+      transform: scale(0.8) translateY(50px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Spring Animation for Cards */
+    @keyframes popInSpring {
+      0% { opacity: 0; transform: scale(0.8) translateY(50px); }
+      60% { opacity: 1; transform: scale(1.05) translateY(-10px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .glass-card img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 20px;
+      margin-bottom: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease;
+    }
+
+    .glass-card:hover img {
+      transform: scale(1.03);
+    }
+
+    .glass-card h3 {
+      color: var(--pink-light);
+      margin: 0 0 12px 0;
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .glass-card p {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 25px;
+      flex-grow: 1;
+    }
+
+    /* Prime Card Styling */
+    .prime-card {
+      background: linear-gradient(135deg, rgba(255, 20, 147, 0.15), rgba(142, 45, 226, 0.15));
+      border: 2px solid var(--pink-light);
+      box-shadow: 0 15px 40px rgba(255, 20, 147, 0.3), inset 0 0 30px rgba(255, 255, 255, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .prime-card::after {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%; width: 200%; height: 200%;
+      background: conic-gradient(transparent, rgba(255,255,255,0.3), transparent 30%);
+      animation: rotate 4s linear infinite;
+      z-index: -1;
+    }
+
+    @keyframes rotate {
+      100% { transform: rotate(360deg); }
+    }
+
+    .prime-card h3 {
+      color: #fff;
+      text-shadow: 0 0 15px var(--pink-neon);
+      font-size: 1.6rem;
+    }
+
+    .prime-card p {
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .prime-card .action-btn {
+      background: linear-gradient(45deg, var(--purple-neon), var(--pink-neon));
+      border: none;
+      box-shadow: 0 5px 20px rgba(255, 20, 147, 0.5);
+      margin-top: auto;
+      font-size: 1.1rem;
+      padding: 18px;
+      animation: none;
+    }
+
+    #reward-code {
+      display: none; 
+      background: rgba(0,0,0,0.5);
+      padding: 20px;
+      border-radius: 16px;
+      border: 2px dashed var(--pink-light);
+      color: #fff; 
+      margin-top: 15px; 
+      font-weight: 900; 
+      font-size: 1.2rem;
+      width: 100%;
+      text-shadow: 0 0 10px var(--pink-neon);
+      animation: popInSpring 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Particles -->
+  <canvas id="particle-canvas"></canvas>
+  
+  <!-- Scanning Laser -->
+  <div id="scan-laser"></div>
+
+  <h1>✨ Multiverse Scanner ✨</h1>
+  <div class="subtitle">Searching alternate dimensions...</div>
+
+  <div id="scanner-container">
+    <div id="scan-btn" class="biometric-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/>
+        <path d="M14 13.12c0 2.38 0 6.38-1 8.88"/>
+        <path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/>
+        <path d="M2 12a10 10 0 0 1 18-6"/>
+        <path d="M2 16h.01"/>
+        <path d="M21.8 16c.2-2 .131-5.354 0-6"/>
+        <path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/>
+        <path d="M8.65 22c.21-.66.45-1.32.57-2"/>
+        <path d="M9 6.8a6 6 0 0 1 9 5.2v2"/>
+      </svg>
+    </div>
+    <div class="instruction-text">Press & Hold Fingerprint</div>
+    <div id="progress-bar">
+      <div id="progress-fill"></div>
+    </div>
+    <div id="log-text">SYSTEM READY. WAITING FOR INPUT.</div>
+  </div>
+
+  <div id="grid-container"></div>
+
+  <script>
+    // ==========================================
+    // CONFIGURATION: EDIT PHOTOS AND JOKES HERE
+    // ==========================================
+    
+    // ⚠️ IMPORTANT INSTRUCTION FOR THE IMAGE ⚠️
+    // 1. Save the image of Prachi you uploaded to the same folder as this file, name it "prachi.jpg"
+    // 2. Change the URL below to "./prachi.jpg"
+    // (I am using a beautiful aesthetic placeholder so the app works immediately!)
+    const PRACHI_IMAGE_URL = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80"; 
+    
+    const imagePool = [
+      PRACHI_IMAGE_URL,
+      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80", 
+      "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80", 
+      "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=600&q=80", 
+      "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=600&q=80"  
+    ];
+
+    const insideJokes = [
+      { title: "Quantum Prachi", bio: "Exists in a superposition of being both early and late." },
+      { title: "Cyber Prachi", bio: "Replaced all her code with 'console.log(\"it works\")'." },
+      { title: "Neon Prachi", bio: "Glows in the dark. Refuses to explain why." },
+      { title: "Retro Prachi", bio: "Still uses Internet Explorer. Unironically." },
+      { title: "Mecha Prachi", bio: "Powered entirely by iced coffee and spite." },
+      { title: "Astral Prachi", bio: "Communicates exclusively through interpretive dance." },
+      { title: "Void Prachi", bio: "Stares into the abyss. The abyss blinks first." },
+      { title: "Glitch Prachi", bio: "Clips through walls when she's running late." }
+    ];
+    // ==========================================
+
+
+    // --- 1. MAGICAL PARTICLE BACKGROUND ---
+    const canvas = document.getElementById('particle-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 0.5;
+        this.speedY = Math.random() * -0.5 - 0.1;
+        this.speedX = (Math.random() - 0.5) * 0.5;
+        this.opacity = Math.random() * 0.5 + 0.1;
+      }
+      update() {
+        this.y += this.speedY;
+        this.x += this.speedX;
+        if (this.y < 0) {
+          this.y = canvas.height;
+          this.x = Math.random() * canvas.width;
+        }
+      }
+      draw() {
+        ctx.fillStyle = `rgba(255, 154, 158, ${this.opacity})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < 70; i++) particles.push(new Particle());
+
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => { p.update(); p.draw(); });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+
+
+    // --- 2. WEB AUDIO API SOUND ENGINE ---
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+    let scanOsc, scanGain;
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new AudioContext();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playTone(freq, type, duration, vol = 0.1) {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function startScanSound() {
+      initAudio();
+      scanOsc = audioCtx.createOscillator();
+      scanGain = audioCtx.createGain();
+      scanOsc.type = 'triangle';
+      // Pitch goes up as progress increases
+      scanOsc.frequency.setValueAtTime(150, audioCtx.currentTime);
+      scanOsc.frequency.linearRampToValueAtTime(600, audioCtx.currentTime + 5); 
+      scanGain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+      scanOsc.connect(scanGain);
+      scanGain.connect(audioCtx.destination);
+      scanOsc.start();
+    }
+
+    function stopScanSound() {
+      if (scanGain && audioCtx) {
+        scanGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+        setTimeout(() => { if (scanOsc) scanOsc.stop(); }, 100);
+      }
+    }
+
+    function playSuccessSound() {
+      initAudio();
+      // Magical ascending chord
+      playTone(440, 'sine', 0.8, 0.1); // A4
+      setTimeout(() => playTone(554.37, 'sine', 0.8, 0.1), 100); // C#5
+      setTimeout(() => playTone(659.25, 'sine', 1.0, 0.15), 200); // E5
+      setTimeout(() => playTone(880, 'sine', 1.5, 0.2), 350); // A5
+    }
+
+    function playErrorSound() {
+      initAudio();
+      playTone(300, 'sawtooth', 0.3, 0.05);
+      setTimeout(() => playTone(200, 'sawtooth', 0.4, 0.05), 150);
+    }
+
+
+    // --- 3. SCANNING LOGIC & ANIMATIONS ---
+    const scanBtn = document.getElementById('scan-btn');
+    const progressFill = document.getElementById('progress-fill');
+    const logText = document.getElementById('log-text');
+    const scannerContainer = document.getElementById('scanner-container');
+    const gridContainer = document.getElementById('grid-container');
+    const scanLaser = document.getElementById('scan-laser');
+
+    let progress = 0;
+    let scanInterval;
+    let flashTimeout;
+    let hasFlashed = false;
+    let isScanning = false;
+
+    function startScan(e) {
+      if (e.cancelable) e.preventDefault(); 
+      if (progress >= 100 || isScanning) return;
+      
+      initAudio();
+      playTone(800, 'sine', 0.1, 0.1); // Initial beep
+      
+      isScanning = true;
+      scanBtn.classList.add('active-state');
+      document.body.classList.add('shake');
+      
+      // Show laser
+      scanLaser.style.display = 'block';
+      scanLaser.style.animation = 'laserSweep 1s linear infinite';
+
+      logText.innerText = "> SCANNING MULTIVERSE FREQUENCIES...";
+      logText.style.color = "var(--rose-gold)";
+      logText.classList.remove('flash-text');
+      
+      startScanSound();
+      
+      scanInterval = setInterval(() => {
+        progress += 1; 
+        progressFill.style.width = `${progress}%`;
+        
+        // CRITICAL REQUIREMENT: Flash text at 50%
+        if (progress === 50 && !hasFlashed) {
+          hasFlashed = true;
+          logText.innerText = "⚠️ TARGET: Prachi. Status: Currently being pranked. Value: Priceless.";
+          logText.classList.add('flash-text');
+          playTone(1200, 'square', 0.2, 0.05); // Alert beep
+          
+          flashTimeout = setTimeout(() => {
+            if (isScanning && progress < 100) {
+              logText.innerText = "> RESUMING SCAN...";
+              logText.classList.remove('flash-text');
+              logText.style.color = "var(--rose-gold)";
+            }
+          }, 2000);
+        }
+        
+        if (progress >= 100) {
+          completeScan();
+        }
+      }, 50);
+    }
+
+    function stopScan(e) {
+      if (!isScanning) return;
+      if (progress >= 100) return;
+      
+      isScanning = false;
+      scanBtn.classList.remove('active-state');
+      clearInterval(scanInterval);
+      clearTimeout(flashTimeout);
+      document.body.classList.remove('shake');
+      scanLaser.style.display = 'none';
+      
+      stopScanSound();
+      if (progress > 0) playErrorSound();
+
+      progress = 0;
+      progressFill.style.width = '0%';
+      hasFlashed = false;
+      logText.classList.remove('flash-text');
+      logText.innerText = "SCAN INTERRUPTED. HOLD TO RESTART.";
+      logText.style.color = "var(--pink-light)";
+    }
+
+    scanBtn.addEventListener('mousedown', startScan);
+    scanBtn.addEventListener('touchstart', startScan, {passive: false});
+    
+    window.addEventListener('mouseup', stopScan);
+    window.addEventListener('touchend', stopScan);
+    window.addEventListener('touchcancel', stopScan);
+    window.addEventListener('mouseleave', stopScan);
+
+    function completeScan() {
+      isScanning = false;
+      scanBtn.classList.remove('active-state');
+      clearInterval(scanInterval);
+      document.body.classList.remove('shake');
+      scanLaser.style.display = 'none';
+      
+      stopScanSound();
+      playSuccessSound();
+
+      // Fade out scanner, fade in grid
+      scannerContainer.style.transition = "opacity 0.5s ease";
+      scannerContainer.style.opacity = "0";
+      
+      setTimeout(() => {
+        scannerContainer.style.display = 'none';
+        gridContainer.style.display = 'grid';
+        document.querySelector('.subtitle').innerText = "Matches found in 4 dimensions!";
+        generateCards();
+      }, 500);
+    }
+
+    function generateCards() {
+      const shuffledJokes = [...insideJokes].sort(() => 0.5 - Math.random()).slice(0, 3);
+      
+      shuffledJokes.forEach((joke, index) => {
+        const randomImg = imagePool[Math.floor(Math.random() * imagePool.length)];
+        createCard(joke.title, joke.bio, randomImg, false, index);
+      });
+      
+      // Prime Card (Always 4th)
+      createCard(
+        "Prime Universe (This One)", 
+        "Prachi. Status: Currently being pranked. Value: Priceless.", 
+        PRACHI_IMAGE_URL, 
+        true, 
+        3 
+      );
+      
+      // Grand Confetti Finale
+      setTimeout(() => {
+        const duration = 3000;
+        const end = Date.now() + duration;
+
+        (function frame() {
+          confetti({
+            particleCount: 5,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0 },
+            colors: ['#ff1493', '#8e2de2', '#ff9a9e', '#ffffff']
+          });
+          confetti({
+            particleCount: 5,
+            angle: 120,
+            spread: 55,
+            origin: { x: 1 },
+            colors: ['#ff1493', '#8e2de2', '#ff9a9e', '#ffffff']
+          });
+
+          if (Date.now() < end) {
+            requestAnimationFrame(frame);
+          }
+        }());
+      }, 3 * 250 + 600); 
+    }
+
+    function createCard(title, bio, imgUrl, isPrime, delayIndex) {
+      const card = document.createElement('div');
+      card.className = `glass-card ${isPrime ? 'prime-card' : ''}`;
+      // Use the new spring animation
+      card.style.animation = `popInSpring 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) ${delayIndex * 0.2}s forwards`;
+      
+      let innerHTML = `
+        <img src="${imgUrl}" alt="${title}">
+        <h3>${title}</h3>
+        <p>${bio}</p>
+      `;
+      
+      if (isPrime) {
+        innerHTML += `
+          <button id="claim-btn" class="action-btn">CLAIM REWARD 🎁</button>
+          <div id="reward-code">
+            CODE: PRACHI-OWES-NOTHING<br>
+            <span style="font-size: 0.85rem; color: #fbc2eb; font-weight: normal; font-family: sans-serif;">(Redeem for 1 Free Coffee/Dinner)</span>
+          </div>
+        `;
+      }
+      
+      card.innerHTML = innerHTML;
+      gridContainer.appendChild(card);
+      
+      if (isPrime) {
+        const claimBtn = card.querySelector('#claim-btn');
+        const rewardCode = card.querySelector('#reward-code');
+        claimBtn.addEventListener('click', () => {
+          playTone(600, 'sine', 0.1, 0.1);
+          setTimeout(() => playTone(800, 'sine', 0.2, 0.1), 100);
+          
+          claimBtn.style.display = 'none';
+          rewardCode.style.display = 'block';
+          
+          confetti({
+            particleCount: 150,
+            spread: 100,
+            origin: { y: 0.7 },
+            colors: ['#ff9a9e', '#fbc2eb', '#ffffff'],
+            zIndex: 1000
+          });
+        });
+      }
+    }
+  </script>
+</body>
+</html>
