@@ -722,31 +722,27 @@
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx;
     let scanOsc, scanGain;
-    let audioInitialized = false;
+    let audioReady = false;
 
-    function initAudio() {
+    async function initAudio() {
       if (!audioCtx) {
         audioCtx = new AudioContext();
-        audioInitialized = true;
       }
       if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
+        await audioCtx.resume();
       }
+      audioReady = audioCtx.state === 'running';
     }
 
     // Initialize audio on first user interaction
-    function initAudioOnInteraction() {
-      if (!audioInitialized) {
-        initAudio();
-        // Play a silent sound to fully initialize audio context
-        playTone(0.1, 'sine', 0.01, 0.001);
-      }
+    async function initAudioOnInteraction() {
+      await initAudio();
     }
 
-    function playTone(freq, type, duration, vol = 0.1) {
+    async function playTone(freq, type, duration, vol = 0.1) {
       try {
-        if (!audioCtx) initAudio();
-        if (!audioCtx || audioCtx.state === 'suspended') return;
+        await initAudio();
+        if (!audioReady) return;
         
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
@@ -763,10 +759,10 @@
       }
     }
 
-    function startScanSound() {
+    async function startScanSound() {
       try {
-        initAudio();
-        if (!audioCtx || audioCtx.state === 'suspended') return;
+        await initAudio();
+        if (!audioReady) return;
         
         scanOsc = audioCtx.createOscillator();
         scanGain = audioCtx.createGain();
@@ -785,7 +781,7 @@
 
     function stopScanSound() {
       try {
-        if (scanGain && audioCtx && audioCtx.state !== 'suspended') {
+        if (scanGain && audioCtx && audioReady) {
           scanGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
           setTimeout(() => { if (scanOsc) scanOsc.stop(); }, 100);
         }
@@ -794,10 +790,10 @@
       }
     }
 
-    function playSuccessSound() {
+    async function playSuccessSound() {
       try {
-        initAudio();
-        if (!audioCtx || audioCtx.state === 'suspended') return;
+        await initAudio();
+        if (!audioReady) return;
         
         // Magical ascending chord
         playTone(440, 'sine', 0.8, 0.1); // A4
@@ -809,10 +805,10 @@
       }
     }
 
-    function playErrorSound() {
+    async function playErrorSound() {
       try {
-        initAudio();
-        if (!audioCtx || audioCtx.state === 'suspended') return;
+        await initAudio();
+        if (!audioReady) return;
         
         playTone(300, 'sawtooth', 0.3, 0.05);
         setTimeout(() => playTone(200, 'sawtooth', 0.4, 0.05), 150);
@@ -836,11 +832,11 @@
     let hasFlashed = false;
     let isScanning = false;
 
-    function startScan(e) {
+    async function startScan(e) {
       if (e.cancelable) e.preventDefault(); 
       if (progress >= 100 || isScanning) return;
       
-      initAudio();
+      await initAudio();
       playTone(800, 'sine', 0.1, 0.1); // Initial beep
       
       isScanning = true;
@@ -905,7 +901,7 @@
       logText.style.color = "var(--pink-light)";
     }
 
-    // Add global click listener to initialize audio on first interaction
+    // Add global listeners to initialize audio on first interaction
     document.addEventListener('click', initAudioOnInteraction, { once: true });
     document.addEventListener('touchstart', initAudioOnInteraction, { once: true });
 
