@@ -40,7 +40,8 @@
       text-align: center;
       user-select: none;
       -webkit-user-select: none;
-      padding: env(safe-area-inset-top) 20px env(safe-area-inset-bottom);
+      /* full safe-area padding including bottom for home indicator */
+      padding: env(safe-area-inset-top, 0px) 20px env(safe-area-inset-bottom, 0px);
     }
 
     @keyframes gradientBG {
@@ -82,7 +83,7 @@
       text-transform: uppercase;
       letter-spacing: 3px;
       font-weight: 900;
-      font-size: 1.8rem;
+      font-size: clamp(1.1rem, 5vw, 1.8rem); /* shrinks on narrow screens */
       background: linear-gradient(to right, var(--soft-pink), var(--rose-gold), var(--lavender), var(--pink-neon));
       background-size: 300% auto;
       -webkit-background-clip: text;
@@ -94,7 +95,6 @@
       opacity: 0;
       transform: translateY(-30px);
       white-space: nowrap;
-      /* isolate so body shake doesn't distort heading transform */
       will-change: transform;
     }
 
@@ -309,9 +309,13 @@
       transform: scale(1.05);
     }
 
-    /* Screen Shake — applied to a wrapper, not body, to avoid transform conflicts */
-    #shake-wrapper {
-      display: contents;
+    /* Screen Shake — on a dedicated overlay so it never conflicts with container animations */
+    #shake-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 998;
+      display: none;
     }
 
     @keyframes intenseShake {
@@ -324,7 +328,7 @@
     }
 
     .shake {
-      animation: intenseShake 0.3s infinite !important;
+      animation: intenseShake 0.3s infinite;
       filter: hue-rotate(10deg) saturate(1.2);
     }
 
@@ -408,7 +412,7 @@
       width: 100%;
       max-width: 450px;
       margin-top: 10px;
-      padding-bottom: 60px;
+      padding: 0 4px calc(60px + env(safe-area-inset-bottom, 0px));
     }
 
     @media (min-width: 768px) {
@@ -425,7 +429,6 @@
       border: 1px solid var(--glass-border);
       border-radius: 24px;
       padding: 24px;
-      /* removed margin — gap on grid handles spacing */
       width: 100%;
       display: flex;
       flex-direction: column;
@@ -433,15 +436,23 @@
       text-align: center;
       position: relative;
       overflow: hidden;
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+      /* no hover transform — causes stuck states on iOS */
+      transition: box-shadow 0.4s ease;
       box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
       min-height: 420px;
       opacity: 0;
     }
 
-    .glass-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
+    /* hover only on real pointer devices */
+    @media (hover: hover) and (pointer: fine) {
+      .glass-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
+      }
+      .glass-card:hover img {
+        transform: scale(1.03);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+      }
     }
 
     @keyframes popInSpring {
@@ -461,6 +472,8 @@
       box-shadow: 0 6px 20px rgba(0,0,0,0.25);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
       cursor: pointer;
+      /* prevent long-press save dialog on iOS */
+      -webkit-touch-callout: none;
     }
 
     .glass-card:hover img {
@@ -560,6 +573,7 @@
 
   <canvas id="particle-canvas"></canvas>
   <div id="scan-laser"></div>
+  <div id="shake-overlay"></div>
 
   <h1>✨ Multiverse Scanner ✨</h1>
   <div class="subtitle">Searching alternate dimensions...</div>
@@ -630,6 +644,10 @@
     const ctx = canvas.getContext('2d');
     let particles = [];
 
+    // Fewer particles on mobile to save battery/CPU
+    const isMobile = window.matchMedia('(pointer: coarse)').matches;
+    const PARTICLE_COUNT = isMobile ? 35 : 70;
+
     function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -660,14 +678,21 @@
       }
     }
 
-    for (let i = 0; i < 70; i++) particles.push(new Particle());
+    for (let i = 0; i < PARTICLE_COUNT; i++) particles.push(new Particle());
 
-    function animateParticles() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach(p => { p.update(); p.draw(); });
+    // Throttle to ~30fps on mobile to reduce CPU load
+    let lastParticleFrame = 0;
+    const PARTICLE_INTERVAL = isMobile ? 33 : 16;
+
+    function animateParticles(ts) {
+      if (ts - lastParticleFrame >= PARTICLE_INTERVAL) {
+        lastParticleFrame = ts;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+      }
       requestAnimationFrame(animateParticles);
     }
-    animateParticles();
+    requestAnimationFrame(animateParticles);
 
 
     // --- 2. AUDIO ENGINE ---
@@ -769,23 +794,35 @@
     const scannerContainer = document.getElementById('scanner-container');
     const gridContainer    = document.getElementById('grid-container');
     const scanLaser        = document.getElementById('scan-laser');
+    const shakeOverlay     = document.getElementById('shake-overlay');
 
-    let progress    = 0;
+    let progress     = 0;
     let scanInterval = null;
     let flashTimeout = null;
-    let hasFlashed  = false;
-    let isScanning  = false;
+    let hasFlashed   = false;
+    let isScanning   = false;
+    let scanStartTime = 0;
+    const MIN_HOLD_MS = 120; // ignore touchend within this window (prevents tap-through)
+
+    // Synchronous guard set before async work to block double-tap
+    let scanInitializing = false;
 
     async function startScan(e) {
       if (e.cancelable) e.preventDefault();
-      if (isScanning || progress >= 100) return;
+      if (isScanning || scanInitializing || progress >= 100) return;
 
-      // Init audio first — must happen inside user gesture handler
+      scanInitializing = true;
+      scanStartTime = Date.now();
+
       await initAudio();
+      scanInitializing = false;
+
+      // Re-check after async gap
+      if (isScanning || progress >= 100) return;
 
       isScanning = true;
       scanBtn.classList.add('active-state');
-      scannerContainer.classList.add('shake');
+      shakeOverlay.classList.add('shake');
 
       scanLaser.style.display = 'block';
       scanLaser.style.animation = 'laserSweep 1s linear infinite';
@@ -794,7 +831,7 @@
       logText.style.color = 'var(--rose-gold)';
       logText.classList.remove('flash-text');
 
-      playTone(800, 'sine', 0.12, 0.10); // start beep
+      playTone(800, 'sine', 0.12, 0.10);
       startScanSound();
 
       scanInterval = setInterval(() => {
@@ -822,10 +859,12 @@
 
     function stopScan() {
       if (!isScanning) return;
+      // Ignore if released too quickly (accidental tap on mobile)
+      if (Date.now() - scanStartTime < MIN_HOLD_MS) return;
 
       isScanning = false;
       scanBtn.classList.remove('active-state');
-      scannerContainer.classList.remove('shake');
+      shakeOverlay.classList.remove('shake');
       clearInterval(scanInterval);
       clearTimeout(flashTimeout);
       scanInterval = null;
@@ -858,7 +897,7 @@
     function completeScan() {
       isScanning = false;
       scanBtn.classList.remove('active-state');
-      scannerContainer.classList.remove('shake');
+      shakeOverlay.classList.remove('shake');
       clearInterval(scanInterval);
       scanInterval = null;
       scanLaser.style.display = 'none';
@@ -969,12 +1008,17 @@
       const img    = document.getElementById('fullscreen-image');
       img.src = src;
       viewer.classList.add('active');
+      // iOS Safari scroll lock
       document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
     }
 
     function closeFullscreen() {
       document.getElementById('fullscreen-viewer').classList.remove('active');
       document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
     }
 
     document.getElementById('fullscreen-viewer').addEventListener('click', function(e) {
